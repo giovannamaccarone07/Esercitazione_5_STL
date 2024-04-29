@@ -112,7 +112,6 @@ bool ImportMesh(const string& filepath,
                 if(abs(determinante) < tol)
                 {
                     count = count + 1;
-                    return false;
                 }
             }
             else
@@ -131,10 +130,10 @@ bool ImportMesh(const string& filepath,
 
                 //Calcolo il prodotto vettoriale:
                 double determinante = lunghezzaLato1.x() * lunghezzaLato2.y() - lunghezzaLato1.y() * lunghezzaLato2.x();
+
                 if(abs(determinante) < tol)
                 {
                     count = count + 1;
-                    return false;
                 }
             }
         if(count == lati.size())
@@ -144,7 +143,6 @@ bool ImportMesh(const string& filepath,
         }
     }
     cout << "La mesh contiene poligoni con area non nulla." << endl;
-
     return true;
 }
 

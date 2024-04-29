@@ -35,14 +35,8 @@ struct PolygonalMesh
     vector<unsigned int> Celle2DId = {};
     //vector per memorizzare i vertici:
     vector<VectorXi> Celle2DVertici = {};
-    //vector per memorizzare i vertici:
-    vector<unsigned int> Celle2DNumeroVertici = {};
     //vector per memorizzare i lati:
     vector<VectorXi> Celle2DLati = {};
-    //vector per memorizzare i lati:
-    vector<unsigned int> Celle2DNumeroLati = {};
-    //map per memorizzare i marker:
-    map<unsigned int, list<unsigned int>> Celle2DMarkers = {};
 
 };
 
