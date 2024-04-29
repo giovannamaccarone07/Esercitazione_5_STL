@@ -5,9 +5,7 @@
 #include <cmath>
 #include <vector>
 #include <limits>
-#include <string>
-#include "PolygonalMesh.hpp"
-#include "Eigen/Eigen"
+
 
 
 namespace PolygonalLibrary {
@@ -15,26 +13,33 @@ namespace PolygonalLibrary {
 bool ImportMesh(const string& filepath,
                 PolygonalMesh& mesh)
 {
+    //Test importazione celle 0D
+    cout << "Test importazione celle 0D" << endl;
     if(!ImportCell0Ds("Cell0Ds.csv", mesh))
     {
+        cerr << "Errore di importazione delle celle 0D" << endl;
         return false;
     }
     else
     {
         cout << "Cell0D marker:" << endl;
-        for(auto iteratore = mesh.Celle0DMarkers.begin(); iteratore != mesh.Celle0DMarkers.end(); iteratore++) //it è un iteratore
+        for(auto iteratore = mesh.Celle0DMarkers.begin(); iteratore != mesh.Celle0DMarkers.end(); iteratore++)
         {
-            cout << "key:\t" << iteratore -> first << "\t values:";
+            cout << "chiave:\t" << iteratore -> first << "\t valori:";
             for(const unsigned int id : iteratore -> second)
                 cout << "\t" << id;
 
             cout << endl;
         }
+        cout << endl;
 
     }
 
+    //Test importazione celle 1D
+    cout << "Test importazione celle 1D" << endl;
     if(!ImportCell1Ds("Cell1Ds.csv", mesh))
     {
+        cerr << "Errore di importazione delle celle 1D" << endl;
         return false;
     }
     else
@@ -42,33 +47,29 @@ bool ImportMesh(const string& filepath,
         cout << "Cell1D marker:" << endl;
         for(auto iteratore = mesh.Celle1DMarkers.begin(); iteratore != mesh.Celle1DMarkers.end(); iteratore++)
         {
-            cout << "key:\t" << iteratore -> first << "\t values:";
+            cout << "chiave:\t" << iteratore -> first << "\t valori:";
             for(const unsigned int id : iteratore -> second)
                 cout << "\t" << id;
 
             cout << endl;
         }
+        cout << endl;
 
     }
 
-
+    //Test importazione celle 2D
+    cout << "Test importazione celle 2D" << endl;
     if(!ImportCell2Ds("Cell2Ds.csv", mesh))
     {
         return false;
     }
-    else {
-        cout << "Cell2D marker:" << endl;
-        for(auto iteratore = mesh.Celle2DMarkers.begin(); iteratore != mesh.Celle2DMarkers.end(); iteratore++)
-        {
-            cout << "key:\t" << iteratore -> first << "\t values:";
-            for(const unsigned int id : iteratore -> second)
-                cout << "\t" << id;
+    cout << "Importazione delle celle 2D andata a buon fine." << endl << endl;
 
-            cout << endl;
-        }
-    }
+
 
     //TEST LUNGHEZZA LATI
+
+    //Imposto la tolleranza pari all'epsilon di macchina
     double tol = numeric_limits<double>::epsilon();
 
     for(const auto& i : mesh.Celle1DVertici)
@@ -80,11 +81,10 @@ bool ImportMesh(const string& filepath,
             cerr << "Ci sono dei lati di lunghezza nulla." << endl;
             return false;
         }
-        else
-        {
-            cout << "I lati hanno lunghezza non nulla." << endl;
-        }
     }
+    cout << "La mesh contiene lati di lunghezza non nulla." << endl;
+
+
 
     // TEST AREA
     for(const auto& lati : mesh.Celle2DLati)
@@ -130,8 +130,8 @@ bool ImportMesh(const string& filepath,
                 Vector2d lunghezzaLato2 = coord_point_C-coordinateEstremo3;
 
                 //Calcolo il prodotto vettoriale:
-                double cross_prod = lunghezzaLato1.x() * lunghezzaLato2.y() - lunghezzaLato1.y() * lunghezzaLato2.x();
-                if(abs(cross_prod) < tol)
+                double determinante = lunghezzaLato1.x() * lunghezzaLato2.y() - lunghezzaLato1.y() * lunghezzaLato2.x();
+                if(abs(determinante) < tol)
                 {
                     count = count + 1;
                     return false;
@@ -143,33 +143,35 @@ bool ImportMesh(const string& filepath,
             return false;
         }
     }
+    cout << "La mesh contiene poligoni con area non nulla." << endl;
 
     return true;
 }
 
 
-bool ImportCell0Ds(const string &filename,
+bool ImportCell0Ds(const string &nomeFile,
                    PolygonalMesh& mesh)
 {
-
+    //Lettura del file:
     ifstream file;
-    file.open(filename);
+    file.open(nomeFile);
 
     if(file.fail()){
         cerr << "Impossibile aprire il file contenente le celle 0D." << endl;
         return false;
     }
 
-    list<string> listLines;
-    string line;
-    while (getline(file, line)){
-        listLines.push_back(line);
+    list<string> listaRighe;
+    string riga;
+    while (getline(file, riga)){
+        listaRighe.push_back(riga);
     }
 
+    file.close();
 
-    listLines.pop_front();
+    listaRighe.pop_front();
 
-    mesh.NumeroCelle0D = listLines.size();
+    mesh.NumeroCelle0D = listaRighe.size();
 
     if (mesh.NumeroCelle0D == 0)
     {
@@ -177,20 +179,21 @@ bool ImportCell0Ds(const string &filename,
         return false;
     }
 
+    //Riservo spazio di memoria per memorizzare gli id e le coordinate
     mesh.Celle0DId.reserve(mesh.NumeroCelle0D);
     mesh.Celle0DCoordinate.reserve(mesh.NumeroCelle0D);
 
-    for (const string& line : listLines)
+    for (const string& riga : listaRighe)
     {
-        istringstream converter(line);
-        string b;
+        istringstream converter(riga);
+        char separatore; //variabile destinata al ";"
         unsigned int id, marker;
-        Vector2d coord;
+        Vector2d coordinata;
 
-        converter >> id >> b >> marker >> b >> coord(0) >> b >> coord(1);
+        converter >> id >> separatore >> marker >> separatore >> coordinata(0) >> separatore >> coordinata(1);
 
         mesh.Celle0DId.push_back(id);
-        mesh.Celle0DCoordinate.push_back(coord);
+        mesh.Celle0DCoordinate.push_back(coordinata);
 
         if( marker != 0)
         {
@@ -205,28 +208,29 @@ bool ImportCell0Ds(const string &filename,
     return true;
 }
 
-bool ImportCell1Ds(const string &filename,
+bool ImportCell1Ds(const string &nomeFile,
                    PolygonalMesh& mesh)
 {
 
+    //Lettura del file:
     ifstream file;
-    file.open(filename);
+    file.open(nomeFile);
 
     if(file.fail()){
         cerr << "Impossibile aprire il file contenente le celle 1D." << endl;
         return false;
     }
 
-    list<string> listLines;
-    string line;
+    list<string> listaRighe;
+    string riga;
 
-    while (getline(file, line)){
-        listLines.push_back(line);
+    while (getline(file, riga)){
+        listaRighe.push_back(riga);
     }
 
-    listLines.pop_front();
+    listaRighe.pop_front();
 
-    mesh.NumeroCelle1D = listLines.size();
+    mesh.NumeroCelle1D = listaRighe.size();
 
     if (mesh.NumeroCelle1D == 0)
     {
@@ -237,17 +241,17 @@ bool ImportCell1Ds(const string &filename,
     mesh.Celle1DId.reserve(mesh.NumeroCelle1D);
     mesh.Celle1DVertici.reserve(mesh.NumeroCelle1D);
 
-    for (const string& line : listLines)
+    for (const string& riga : listaRighe)
     {
-        istringstream converter(line);
-        char b;
+        istringstream converter(riga);
+        char separatore;
         unsigned int id, marker;
-        Vector2i vertices;
+        Vector2i vertici;
 
-        converter >> id >> b >> marker >> b >> vertices(0) >> b >> vertices(1);
+        converter >> id >> separatore >> marker >> separatore >> vertici(0) >> separatore >> vertici(1);
 
         mesh.Celle1DId.push_back(id);
-        mesh.Celle1DVertici.push_back(vertices);
+        mesh.Celle1DVertici.push_back(vertici);
 
         if( marker != 0)
         {
@@ -262,28 +266,28 @@ bool ImportCell1Ds(const string &filename,
     return true;
 }
 
-bool ImportCell2Ds(const string &filename,
+bool ImportCell2Ds(const string &nomeFile,
                    PolygonalMesh& mesh)
 {
 
     ifstream file;
-    file.open(filename);
+    file.open(nomeFile);
 
     if(file.fail()){
         cerr << "Impossibile aprire il file contenente le celle 2D." << endl;
         return false;
     }
 
-    list<string> listLines;
-    string line;
+    list<string> listaRighe;
+    string riga;
 
-    while (getline(file, line)){
-        listLines.push_back(line);
+    while (getline(file, riga)){
+        listaRighe.push_back(riga);
     }
 
-    listLines.pop_front();
+    listaRighe.pop_front();
 
-    mesh.NumeroCelle2D = listLines.size();
+    mesh.NumeroCelle2D = listaRighe.size();
 
     if (mesh.NumeroCelle2D == 0)
     {
@@ -296,37 +300,40 @@ bool ImportCell2Ds(const string &filename,
     mesh.Celle2DLati.reserve(mesh.NumeroCelle2D);
 
 
-    for (const string& line : listLines)
+    for (const string& riga : listaRighe)
     {
-        istringstream converter(line);
+        istringstream converter(riga);
 
-        char b;
-        unsigned int marker;
-        unsigned int NumeroVertici;
-        unsigned int NumeroLati;
-        unsigned int id;
-
-
-
+        char separatore;
+        unsigned int id, marker, NumeroVertici, NumeroLati;
         VectorXi vertici;
         VectorXi lati;
-        converter >> id >> b >> marker >> b >> NumeroVertici;
 
+        converter >> id >> separatore >> marker >> separatore >> NumeroVertici;
         vertici.resize(NumeroVertici);
-        for(unsigned int i = 0; i < 3; i++)
-            converter >> b >> vertici[i];
 
+        for(unsigned int i = 0; i < NumeroVertici; i++)
+            converter >> separatore >> vertici[i];
 
-        converter >> b >> NumeroLati;
+        converter >> separatore >> NumeroLati;
         lati.resize(NumeroLati);
-        for(unsigned int i = 0; i < 3; i++)
-            converter >> b >> lati[i];
+
+        for(unsigned int i = 0; i < NumeroLati; i++)
+            converter >> separatore >> lati[i];
 
         mesh.Celle2DId.push_back(id);
         mesh.Celle2DVertici.push_back(vertici);
         mesh.Celle2DLati.push_back(lati);
 
+        if( marker != 0)
+        {
+            auto ret = mesh.Celle1DMarkers.insert({marker, {id}});
+            if(!ret.second)
+                (ret.first)->second.push_back(id);
+        }
+
     }
+
     file.close();
     return true;
 }

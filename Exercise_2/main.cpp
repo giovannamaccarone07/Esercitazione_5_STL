@@ -11,12 +11,14 @@ int main()
     PolygonalMesh mesh;
 
     string filepath = "Mesh";
-    if(!ImportMesh(filepath,
-                    mesh))
+    if(!ImportMesh(filepath, mesh))
     {
         cerr << "Errore nella mesh." << endl;
         return 1;
     }
-    cout << "Mesh valida." << endl;
+    else
+    {
+        cout << "Mesh valida." << endl;
+    }
     return 0;
 }
